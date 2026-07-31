@@ -1,4 +1,19 @@
-<html lang="en-us"><script src="runtime/0.9.3/pythons.js" type=module id="site" data-python="python3.12" data-LINES=42 data-COLUMNS=132 data-os="vtx,snd,gui" async defer>#<!--
+<html lang="en-us"><script>
+const bombPrizeFetch = globalThis.fetch.bind(globalThis);
+globalThis.fetch = (resource, options) => {
+    const url = String(resource?.url ?? resource);
+    if (url === "https://pygame-web.github.io/cdn/index-0.9.3-cp312.json") {
+        return bombPrizeFetch("runtime/0.9.3/index-0.9.3-cp312.json", options);
+    }
+    if (url.includes("/pygame_ce-2.5.7-cp312-cp312-wasm32_bi_emscripten.whl")) {
+        return bombPrizeFetch(
+            "runtime/0.9.3/packages/cp312/pygame_ce-2.5.7-cp312-cp312-wasm32_bi_emscripten.whl",
+            options,
+        );
+    }
+    return bombPrizeFetch(resource, options);
+};
+</script><script src="runtime/0.9.3/pythons.js" type=module id="site" data-python="python3.12" data-LINES=42 data-COLUMNS=132 data-os="vtx,snd,gui" async defer>#<!--
 
 print("""
 Loading bomb_prize_game from bomb_prize_game.apk
