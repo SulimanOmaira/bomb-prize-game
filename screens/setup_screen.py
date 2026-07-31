@@ -109,11 +109,17 @@ class SetupScreen:
         button_font: pygame.font.Font,
     ) -> None:
         surface.fill(BACKGROUND)
+        pygame.draw.rect(
+            surface,
+            self.player.accent_color,
+            (0, 0, surface.get_width(), 6),
+        )
         draw_centered_text(
             surface,
             f"{self.player.name}: Secret Setup",
             title_font,
             35,
+            self.player.accent_color,
         )
         self.bomb_button.draw(surface, button_font)
         self.prize_button.draw(surface, button_font)

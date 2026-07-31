@@ -1,6 +1,6 @@
 """Reusable Pygame button."""
 
-from typing import Tuple
+from typing import ClassVar, Optional, Tuple
 
 import pygame
 
@@ -14,6 +14,8 @@ from .settings import (
 
 
 class Button:
+    pointer_position: ClassVar[Optional[Tuple[int, int]]] = None
+
     def __init__(
         self,
         text: str,
@@ -35,13 +37,18 @@ class Button:
             and self.rect.collidepoint(event.pos)
         )
 
+    @classmethod
+    def set_pointer_position(cls, position: Tuple[int, int]) -> None:
+        cls.pointer_position = position
+
     def draw(
         self,
         surface: pygame.Surface,
         font: pygame.font.Font,
         enabled: bool = True,
     ) -> None:
-        hovered = self.rect.collidepoint(pygame.mouse.get_pos())
+        pointer = self.pointer_position or pygame.mouse.get_pos()
+        hovered = self.rect.collidepoint(pointer)
         if not enabled:
             color = BUTTON_DISABLED
         else:

@@ -1,6 +1,6 @@
 """Drawing helpers shared by screens."""
 
-from typing import Iterator, Tuple
+from typing import Iterator, Optional, Tuple
 
 import pygame
 
@@ -21,8 +21,19 @@ def draw_centered_text(
     font: pygame.font.Font,
     y: int,
     color: Tuple[int, int, int] = TEXT,
+    max_width: Optional[int] = None,
 ) -> pygame.Rect:
     rendered = font.render(text, True, color)
+    available_width = max_width or surface.get_width() - 32
+    if rendered.get_width() > available_width:
+        scale = available_width / rendered.get_width()
+        rendered = pygame.transform.smoothscale(
+            rendered,
+            (
+                available_width,
+                max(1, round(rendered.get_height() * scale)),
+            ),
+        )
     rect = rendered.get_rect(center=(surface.get_width() // 2, y))
     surface.blit(rendered, rect)
     return rect

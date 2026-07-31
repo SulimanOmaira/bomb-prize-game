@@ -5,7 +5,14 @@ from typing import Optional
 import pygame
 
 from game.button import Button
-from game.settings import BACKGROUND, MUTED_TEXT, PANEL, WINDOW_HEIGHT, WINDOW_WIDTH
+from game.settings import (
+    BACKGROUND,
+    COMPACT_LAYOUT,
+    MUTED_TEXT,
+    PANEL,
+    WINDOW_HEIGHT,
+    WINDOW_WIDTH,
+)
 from .common import draw_centered_text
 
 
@@ -73,7 +80,13 @@ class MainMenu:
         button_font: pygame.font.Font,
     ) -> None:
         draw_centered_text(surface, "Instructions", title_font, 90)
-        panel = pygame.Rect(105, 145, WINDOW_WIDTH - 210, 340)
+        panel_margin = 30 if COMPACT_LAYOUT else 105
+        panel = pygame.Rect(
+            panel_margin,
+            145,
+            WINDOW_WIDTH - panel_margin * 2,
+            340,
+        )
         pygame.draw.rect(surface, PANEL, panel, border_radius=10)
         lines = [
             "Each player secretly places 3 bombs and 1 prize.",
@@ -84,5 +97,11 @@ class MainMenu:
             "Pass the device when the game asks you to.",
         ]
         for index, line in enumerate(lines):
-            draw_centered_text(surface, line, body_font, 190 + index * 47)
+            draw_centered_text(
+                surface,
+                line,
+                body_font,
+                190 + index * 47,
+                max_width=panel.width - 24,
+            )
         self.back_button.draw(surface, button_font)

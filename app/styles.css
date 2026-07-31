@@ -25,15 +25,26 @@ body {
 }
 
 .game-shell {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
   width: 100%;
   height: 100%;
   min-height: 100dvh;
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 
 .game-frame {
+  flex: 1 1 auto;
   display: block;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
   border: 0;
   background: #1c2638;
 }

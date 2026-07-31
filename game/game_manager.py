@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from .board import CellContent
 from .player import Player
-from .settings import BOMBS_REQUIRED
+from .settings import BOMBS_REQUIRED, PLAYER_COLORS
 
 
 @dataclass(frozen=True)
@@ -27,7 +27,10 @@ class GameManager:
         self.end_reason = ""
 
     def create_players(self, first_name: str, second_name: str) -> None:
-        self.players = [Player(first_name), Player(second_name)]
+        self.players = [
+            Player(first_name, accent_color=PLAYER_COLORS[0]),
+            Player(second_name, accent_color=PLAYER_COLORS[1]),
+        ]
         self._reset_match_state()
 
     @property

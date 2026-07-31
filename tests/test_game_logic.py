@@ -2,7 +2,7 @@
 
 from game.board import Board, CellContent
 from game.game_manager import GameManager
-from game.settings import BOARD_SIZE, BOMBS_REQUIRED
+from game.settings import BOARD_SIZE, BOMBS_REQUIRED, PLAYER_COLORS
 
 
 def prepare_manager() -> GameManager:
@@ -102,6 +102,18 @@ def test_turn_switches_between_players() -> None:
     manager.switch_turn()
     assert manager.current_player is manager.players[1]
     assert manager.opponent is manager.players[0]
+
+
+def test_players_have_distinct_persistent_colors() -> None:
+    manager = prepare_manager()
+
+    assert [player.accent_color for player in manager.players] == list(
+        PLAYER_COLORS
+    )
+    manager.reset_same_names()
+    assert [player.accent_color for player in manager.players] == list(
+        PLAYER_COLORS
+    )
 
 
 def test_reset_same_names_clears_match_data() -> None:

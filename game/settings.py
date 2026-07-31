@@ -1,11 +1,60 @@
 """Shared configuration values for the game."""
 
-from typing import Final, Tuple
+import sys
+from typing import Final, Optional, Tuple
 
 Color = Tuple[int, int, int]
+Viewport = Tuple[int, int]
 
-WINDOW_WIDTH: Final = 900
-WINDOW_HEIGHT: Final = 700
+
+def choose_content_size(viewport: Optional[Viewport]) -> Viewport:
+    """Return a touch-friendly logical size for the current viewport."""
+    if viewport is not None:
+        width, height = viewport
+        if width <= 600 and height >= width:
+            return 480, 700
+    return 900, 700
+
+
+def choose_display_size(content: Viewport, viewport: Optional[Viewport]) -> Viewport:
+    """Match the browser aspect ratio without stretching the game surface."""
+    if viewport is None:
+        return content
+
+    content_width, content_height = content
+    viewport_width, viewport_height = viewport
+    if viewport_width <= 0 or viewport_height <= 0:
+        return content
+
+    viewport_ratio = viewport_width / viewport_height
+    content_ratio = content_width / content_height
+    if viewport_ratio >= content_ratio:
+        return round(content_height * viewport_ratio), content_height
+    return content_width, round(content_width / viewport_ratio)
+
+
+def _browser_viewport() -> Optional[Viewport]:
+    if sys.platform != "emscripten":
+        return None
+    try:
+        import platform
+
+        width = int(platform.window.innerWidth)
+        height = int(platform.window.innerHeight)
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if width <= 0 or height <= 0:
+        return None
+    return width, height
+
+
+_VIEWPORT: Final = _browser_viewport()
+WINDOW_WIDTH, WINDOW_HEIGHT = choose_content_size(_VIEWPORT)
+DISPLAY_WIDTH, DISPLAY_HEIGHT = choose_display_size(
+    (WINDOW_WIDTH, WINDOW_HEIGHT),
+    _VIEWPORT,
+)
+COMPACT_LAYOUT: Final = WINDOW_WIDTH < 700
 WINDOW_TITLE: Final = "Bomb Prize Game"
 FPS: Final = 60
 
@@ -40,3 +89,9 @@ ERROR: Final[Color] = (255, 116, 116)
 SUCCESS: Final[Color] = (112, 220, 142)
 INPUT_ACTIVE: Final[Color] = (84, 166, 218)
 INPUT_INACTIVE: Final[Color] = (120, 134, 153)
+PLAYER_ONE_COLOR: Final[Color] = (72, 169, 255)
+PLAYER_TWO_COLOR: Final[Color] = (255, 159, 67)
+PLAYER_COLORS: Final[Tuple[Color, Color]] = (
+    PLAYER_ONE_COLOR,
+    PLAYER_TWO_COLOR,
+)

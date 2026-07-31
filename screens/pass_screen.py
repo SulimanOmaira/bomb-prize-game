@@ -5,13 +5,26 @@ from typing import Optional
 import pygame
 
 from game.button import Button
-from game.settings import BACKGROUND, MUTED_TEXT, PANEL, WINDOW_WIDTH
+from game.settings import (
+    BACKGROUND,
+    COMPACT_LAYOUT,
+    Color,
+    MUTED_TEXT,
+    PANEL,
+    WINDOW_WIDTH,
+)
 from .common import draw_centered_text
 
 
 class PassScreen:
-    def __init__(self, next_player_name: str, message: str) -> None:
+    def __init__(
+        self,
+        next_player_name: str,
+        next_player_color: Color,
+        message: str,
+    ) -> None:
         self.next_player_name = next_player_name
+        self.next_player_color = next_player_color
         self.message = message
         self.ready_button = Button(
             "I am ready",
@@ -34,14 +47,36 @@ class PassScreen:
         button_font: pygame.font.Font,
     ) -> None:
         surface.fill(BACKGROUND)
-        panel = pygame.Rect(145, 155, WINDOW_WIDTH - 290, 385)
+        panel_margin = 30 if COMPACT_LAYOUT else 145
+        panel = pygame.Rect(
+            panel_margin,
+            155,
+            WINDOW_WIDTH - panel_margin * 2,
+            385,
+        )
         pygame.draw.rect(surface, PANEL, panel, border_radius=12)
+        pygame.draw.rect(
+            surface,
+            self.next_player_color,
+            panel,
+            4,
+            border_radius=12,
+        )
         draw_centered_text(surface, "Pass the device", title_font, 230)
         draw_centered_text(
             surface,
             f"Give the device to {self.next_player_name}",
             body_font,
             310,
+            self.next_player_color,
+            max_width=panel.width - 24,
         )
-        draw_centered_text(surface, self.message, body_font, 355, MUTED_TEXT)
+        draw_centered_text(
+            surface,
+            self.message,
+            body_font,
+            355,
+            MUTED_TEXT,
+            max_width=panel.width - 24,
+        )
         self.ready_button.draw(surface, button_font)

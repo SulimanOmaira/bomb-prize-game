@@ -6,7 +6,13 @@ import pygame
 
 from game.button import Button
 from game.game_manager import GameManager
-from game.settings import BACKGROUND, MUTED_TEXT, PANEL, SUCCESS, WINDOW_WIDTH
+from game.settings import (
+    BACKGROUND,
+    COMPACT_LAYOUT,
+    MUTED_TEXT,
+    PANEL,
+    WINDOW_WIDTH,
+)
 from .common import draw_centered_text
 
 
@@ -40,7 +46,13 @@ class ResultScreen:
         button_font: pygame.font.Font,
     ) -> None:
         surface.fill(BACKGROUND)
-        panel = pygame.Rect(125, 55, WINDOW_WIDTH - 250, 590)
+        panel_margin = 30 if COMPACT_LAYOUT else 125
+        panel = pygame.Rect(
+            panel_margin,
+            55,
+            WINDOW_WIDTH - panel_margin * 2,
+            590,
+        )
         pygame.draw.rect(surface, PANEL, panel, border_radius=12)
         draw_centered_text(surface, "Game Over", title_font, 110)
 
@@ -52,13 +64,14 @@ class ResultScreen:
                 f"Winner: {winner.name}",
                 title_font,
                 185,
-                SUCCESS,
+                winner.accent_color,
             )
             draw_centered_text(
                 surface,
                 f"Loser: {loser.name}",
                 body_font,
                 235,
+                loser.accent_color,
             )
             if self.manager.end_reason == "found the prize":
                 reason = f"{winner.name} won by finding the prize."
@@ -67,7 +80,14 @@ class ResultScreen:
                     f"{loser.name} lost after discovering "
                     f"the third bomb."
                 )
-            draw_centered_text(surface, reason, body_font, 285, MUTED_TEXT)
+            draw_centered_text(
+                surface,
+                reason,
+                body_font,
+                285,
+                MUTED_TEXT,
+                max_width=panel.width - 24,
+            )
 
         self.replay_button.draw(surface, button_font)
         self.new_game_button.draw(surface, button_font)

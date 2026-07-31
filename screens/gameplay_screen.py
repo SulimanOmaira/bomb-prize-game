@@ -78,13 +78,24 @@ class GameplayScreen:
         surface.fill(BACKGROUND)
         player = self.manager.current_player
         opponent = self.manager.opponent
-        draw_centered_text(surface, f"Turn: {player.name}", title_font, 38)
+        pygame.draw.rect(
+            surface,
+            player.accent_color,
+            (0, 0, surface.get_width(), 6),
+        )
+        draw_centered_text(
+            surface,
+            f"Turn: {player.name}",
+            title_font,
+            38,
+            player.accent_color,
+        )
         draw_centered_text(
             surface,
             f"Choose from {opponent.name}'s board",
             body_font,
             88,
-            MUTED_TEXT,
+            opponent.accent_color,
         )
         draw_centered_text(
             surface,

@@ -5,8 +5,13 @@ from typing import Optional, Union
 
 import pygame
 
+from game.button import Button
 from game.game_manager import GameManager
 from game.settings import (
+    BACKGROUND,
+    COMPACT_LAYOUT,
+    DISPLAY_HEIGHT,
+    DISPLAY_WIDTH,
     FPS,
     WINDOW_HEIGHT,
     WINDOW_TITLE,
@@ -33,11 +38,26 @@ class GameApplication:
     def __init__(self) -> None:
         pygame.init()
         pygame.display.set_caption(WINDOW_TITLE)
-        self.surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.display_surface = pygame.display.set_mode(
+            (DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        )
+        self.surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.viewport_scale = min(
+            DISPLAY_WIDTH / WINDOW_WIDTH,
+            DISPLAY_HEIGHT / WINDOW_HEIGHT,
+        )
+        self.viewport_size = (
+            round(WINDOW_WIDTH * self.viewport_scale),
+            round(WINDOW_HEIGHT * self.viewport_scale),
+        )
+        self.viewport_offset = (
+            (DISPLAY_WIDTH - self.viewport_size[0]) // 2,
+            (DISPLAY_HEIGHT - self.viewport_size[1]) // 2,
+        )
         self.clock = pygame.time.Clock()
-        self.title_font = pygame.font.Font(None, 46)
-        self.body_font = pygame.font.Font(None, 30)
-        self.button_font = pygame.font.Font(None, 29)
+        self.title_font = pygame.font.Font(None, 40 if COMPACT_LAYOUT else 46)
+        self.body_font = pygame.font.Font(None, 25 if COMPACT_LAYOUT else 30)
+        self.button_font = pygame.font.Font(None, 25 if COMPACT_LAYOUT else 29)
 
         self.manager = GameManager()
         self.menu = MainMenu()
@@ -54,23 +74,54 @@ class GameApplication:
                     if event.type == pygame.QUIT:
                         self.running = False
                         break
+                    event = self._to_game_event(event)
                     action = self.screen.handle_event(event)
                     if action is not None:
                         self._handle_action(action)
 
                 if not self.running:
                     break
+                Button.set_pointer_position(
+                    self._to_game_position(pygame.mouse.get_pos())
+                )
                 self.screen.draw(
                     self.surface,
                     self.title_font,
                     self.body_font,
                     self.button_font,
                 )
+                self._present()
                 pygame.display.flip()
                 self.clock.tick(FPS)
                 await asyncio.sleep(0)
         finally:
             pygame.quit()
+
+    def _to_game_event(self, event: pygame.event.Event) -> pygame.event.Event:
+        if not hasattr(event, "pos"):
+            return event
+
+        position = self._to_game_position(event.pos)
+        attributes = dict(event.dict)
+        attributes["pos"] = position
+        return pygame.event.Event(event.type, attributes)
+
+    def _to_game_position(self, position: tuple[int, int]) -> tuple[int, int]:
+        offset_x, offset_y = self.viewport_offset
+        x = round((position[0] - offset_x) / self.viewport_scale)
+        y = round((position[1] - offset_y) / self.viewport_scale)
+        return x, y
+
+    def _present(self) -> None:
+        self.display_surface.fill(BACKGROUND)
+        if self.viewport_size == (WINDOW_WIDTH, WINDOW_HEIGHT):
+            rendered = self.surface
+        else:
+            rendered = pygame.transform.smoothscale(
+                self.surface,
+                self.viewport_size,
+            )
+        self.display_surface.blit(rendered, self.viewport_offset)
 
     def _handle_action(self, action: object) -> None:
         if action == "quit":
@@ -97,6 +148,7 @@ class GameApplication:
         if self.state == "setup_0" and action == "confirmed":
             self._show_pass(
                 self.manager.players[1].name,
+                self.manager.players[1].accent_color,
                 "Your secret board is next.",
                 "setup_1",
             )
@@ -105,6 +157,7 @@ class GameApplication:
         if self.state == "setup_1" and action == "confirmed":
             self._show_pass(
                 self.manager.players[0].name,
+                self.manager.players[0].accent_color,
                 "The match will begin with your turn.",
                 "gameplay",
             )
@@ -125,6 +178,7 @@ class GameApplication:
                 self.manager.switch_turn()
                 self._show_pass(
                     self.manager.current_player.name,
+                    self.manager.current_player.accent_color,
                     "It is now your turn.",
                     "gameplay",
                 )
@@ -147,11 +201,16 @@ class GameApplication:
     def _show_pass(
         self,
         next_player_name: str,
+        next_player_color: tuple[int, int, int],
         message: str,
         destination: str,
     ) -> None:
         self.pass_destination = destination
-        self.screen = PassScreen(next_player_name, message)
+        self.screen = PassScreen(
+            next_player_name,
+            next_player_color,
+            message,
+        )
         self.state = "pass"
 
     def _show_gameplay(self) -> None:
@@ -162,6 +221,7 @@ class GameApplication:
         self.state = "gameplay"
 
     def _go_to_menu(self) -> None:
+        self.names_screen.hide_mobile_input()
         self.manager.clear_game()
         self.menu.reset()
         self.screen = self.menu
