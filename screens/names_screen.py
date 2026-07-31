@@ -18,6 +18,7 @@ from game.settings import (
     TEXT,
     WINDOW_HEIGHT,
     WINDOW_WIDTH,
+    player_panel_color,
 )
 from .common import draw_centered_text
 
@@ -132,13 +133,14 @@ class NamesScreen:
 
         label = "First player name" if index == 0 else "Second player name"
         color = self._css_color(PLAYER_COLORS[index])
+        field_color = self._css_color(player_panel_color(PLAYER_COLORS[index]))
         element.value = self.names[index]
         element.placeholder = label
         element.enterKeyHint = "next" if index == 0 else "done"
         element.setAttribute("aria-label", label)
         element.setAttribute("autocapitalize", "words")
         element.style.display = "block"
-        element.style.backgroundColor = self._css_color(PANEL)
+        element.style.backgroundColor = field_color
         element.style.color = self._css_color(TEXT)
         element.style.border = f"3px solid {color}"
         element.style.caretColor = color
@@ -234,7 +236,12 @@ class NamesScreen:
             player_color = PLAYER_COLORS[index]
             label = body_font.render(labels[index], True, player_color)
             surface.blit(label, (rect.x, rect.y - 32))
-            pygame.draw.rect(surface, PANEL, rect, border_radius=6)
+            pygame.draw.rect(
+                surface,
+                player_panel_color(player_color),
+                rect,
+                border_radius=6,
+            )
             border_width = 4 if self.active_index == index else 2
             pygame.draw.rect(
                 surface,

@@ -12,7 +12,6 @@ from game.settings import (
     BORDER,
     BOMBS_REQUIRED,
     BUTTON_HOVER,
-    EMPTY_CELL,
     ERROR,
     MUTED_TEXT,
     SELECTED_BOMB,
@@ -20,6 +19,7 @@ from game.settings import (
     SUCCESS,
     TEXT,
     WINDOW_WIDTH,
+    player_cell_color,
 )
 from .common import (
     board_pixel_width,
@@ -141,7 +141,7 @@ class SetupScreen:
             elif content == CellContent.PRIZE:
                 color = SELECTED_PRIZE
             else:
-                color = EMPTY_CELL
+                color = player_cell_color(self.player.accent_color)
             pygame.draw.rect(surface, color, rect, border_radius=5)
             pygame.draw.rect(surface, BORDER, rect, 1, border_radius=5)
             if content == CellContent.BOMB:

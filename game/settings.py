@@ -95,3 +95,21 @@ PLAYER_COLORS: Final[Tuple[Color, Color]] = (
     PLAYER_ONE_COLOR,
     PLAYER_TWO_COLOR,
 )
+
+
+def blend_color(base: Color, accent: Color, accent_weight: float) -> Color:
+    """Blend an accent into a base color while keeping text contrast readable."""
+    return tuple(
+        round(base_channel * (1 - accent_weight) + accent_channel * accent_weight)
+        for base_channel, accent_channel in zip(base, accent)
+    )
+
+
+def player_panel_color(accent: Color) -> Color:
+    """Return a dark player-tinted color for panels and input fields."""
+    return blend_color(PANEL, accent, 0.28)
+
+
+def player_cell_color(accent: Color) -> Color:
+    """Return a stronger player-tinted color for unrevealed board cells."""
+    return blend_color(PANEL, accent, 0.66)

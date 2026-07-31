@@ -14,11 +14,11 @@ from game.settings import (
     BOMBS_REQUIRED,
     EMPTY_CELL,
     ERROR,
-    HIDDEN_CELL,
     MUTED_TEXT,
     PRIZE_CELL,
     SUCCESS,
     WINDOW_WIDTH,
+    player_cell_color,
 )
 from .common import (
     board_pixel_width,
@@ -111,7 +111,7 @@ class GameplayScreen:
         ):
             cell = opponent.board.get_cell(row, column)
             if not cell.revealed:
-                color = HIDDEN_CELL
+                color = player_cell_color(player.accent_color)
             elif cell.content == CellContent.BOMB:
                 color = BOMB_CELL
             elif cell.content == CellContent.PRIZE:
