@@ -8,8 +8,6 @@ from game.board import CellContent
 from game.button import Button
 from game.player import Player
 from game.settings import (
-    BACKGROUND,
-    BORDER,
     BOMBS_REQUIRED,
     BUTTON_HOVER,
     ERROR,
@@ -23,8 +21,10 @@ from game.settings import (
 )
 from .common import (
     board_pixel_width,
+    draw_background,
     draw_bomb_symbol,
     draw_centered_text,
+    draw_game_cell,
     draw_prize_symbol,
     iter_board_rects,
 )
@@ -108,12 +108,8 @@ class SetupScreen:
         body_font: pygame.font.Font,
         button_font: pygame.font.Font,
     ) -> None:
-        surface.fill(BACKGROUND)
-        pygame.draw.rect(
-            surface,
-            self.player.accent_color,
-            (0, 0, surface.get_width(), 6),
-        )
+        draw_background(surface)
+        pygame.draw.rect(surface, self.player.accent_color, (0, 0, surface.get_width(), 8))
         draw_centered_text(
             surface,
             f"{self.player.name}: Secret Setup",
@@ -142,8 +138,7 @@ class SetupScreen:
                 color = SELECTED_PRIZE
             else:
                 color = player_cell_color(self.player.accent_color)
-            pygame.draw.rect(surface, color, rect, border_radius=5)
-            pygame.draw.rect(surface, BORDER, rect, 1, border_radius=5)
+            draw_game_cell(surface, rect, color)
             if content == CellContent.BOMB:
                 draw_bomb_symbol(surface, rect)
             elif content == CellContent.PRIZE:

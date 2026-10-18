@@ -1,8 +1,19 @@
-"""Unit tests for board and game manager rules."""
+"""Unit tests for board, game manager, and turn-screen rules."""
+
+import pygame
+import pytest
 
 from game.board import Board, CellContent
 from game.game_manager import GameManager
-from game.settings import BOARD_SIZE, BOMBS_REQUIRED, PLAYER_COLORS
+from game.settings import (
+    BOARD_SIZE,
+    BOMBS_REQUIRED,
+    CELL_HEIGHT,
+    CELL_WIDTH,
+    PLAYER_COLORS,
+)
+from screens.common import iter_board_rects
+from screens.gameplay_screen import GameplayScreen
 
 
 def prepare_manager() -> GameManager:
@@ -16,11 +27,13 @@ def prepare_manager() -> GameManager:
     return manager
 
 
-def test_board_is_six_by_six() -> None:
+def test_board_is_three_by_three() -> None:
     board = Board()
-    assert board.size == BOARD_SIZE == 6
-    assert len(board.cells) == 6
-    assert all(len(row) == 6 for row in board.cells)
+    assert board.size == BOARD_SIZE == 3
+    assert len(board.cells) == 3
+    assert all(len(row) == 3 for row in board.cells)
+    assert sum(len(row) for row in board.cells) == 9
+    assert CELL_WIDTH == CELL_HEIGHT
 
 
 def test_only_three_bombs_can_be_placed() -> None:
@@ -28,7 +41,7 @@ def test_only_three_bombs_can_be_placed() -> None:
     assert board.place_bomb(0, 0)
     assert board.place_bomb(0, 1)
     assert board.place_bomb(0, 2)
-    assert not board.place_bomb(0, 3)
+    assert not board.place_bomb(1, 0)
     assert board.bomb_count == BOMBS_REQUIRED
 
 
@@ -61,7 +74,7 @@ def test_same_cell_cannot_be_selected_twice() -> None:
     assert first.valid
 
     manager.switch_turn()
-    assert manager.select_opponent_cell(2, 3).valid
+    assert manager.select_opponent_cell(2, 1).valid
     manager.switch_turn()
     duplicate = manager.select_opponent_cell(2, 2)
     assert not duplicate.valid
@@ -76,6 +89,48 @@ def test_finding_prize_wins_the_game() -> None:
     assert manager.winner is manager.players[0]
     assert manager.loser is manager.players[1]
     assert manager.end_reason == "found the prize"
+
+
+@pytest.mark.parametrize(
+    ("target", "bombs_discovered"),
+    [((1, 0), 0), ((0, 0), BOMBS_REQUIRED - 1)],
+)
+def test_final_selection_waits_for_end_turn_button(
+    target: tuple[int, int],
+    bombs_discovered: int,
+) -> None:
+    manager = prepare_manager()
+    manager.current_player.bombs_discovered = bombs_discovered
+    screen = GameplayScreen(manager)
+    target_rect = next(
+        rect
+        for row, column, rect in iter_board_rects(
+            screen.board_x,
+            screen.board_y,
+            manager.opponent.board.size,
+        )
+        if (row, column) == target
+    )
+
+    selection_action = screen.handle_event(
+        pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN,
+            {"button": 1, "pos": target_rect.center},
+        )
+    )
+
+    assert selection_action is None
+    assert screen.selection_made
+    assert manager.game_over
+    assert manager.opponent.board.get_cell(*target).revealed
+
+    continue_action = screen.handle_event(
+        pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN,
+            {"button": 1, "pos": screen.end_turn_button.rect.center},
+        )
+    )
+    assert continue_action == "game_over"
 
 
 def test_discovering_third_bomb_loses_the_game() -> None:

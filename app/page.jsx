@@ -3,7 +3,7 @@ export default function GamePage() {
     <main className="game-shell">
       <iframe
         className="game-frame"
-        src="/game/index.html?v=6"
+        src="/game/index.html?v=8"
         title="Bomb Prize Game"
         allow="autoplay; fullscreen"
       />

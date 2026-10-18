@@ -6,14 +6,12 @@ import pygame
 
 from game.button import Button
 from game.settings import (
-    BACKGROUND,
     COMPACT_LAYOUT,
     MUTED_TEXT,
-    PANEL,
     WINDOW_HEIGHT,
     WINDOW_WIDTH,
 )
-from .common import draw_centered_text
+from .common import draw_background, draw_centered_text, draw_panel
 
 
 class MainMenu:
@@ -55,19 +53,27 @@ class MainMenu:
         body_font: pygame.font.Font,
         button_font: pygame.font.Font,
     ) -> None:
-        surface.fill(BACKGROUND)
+        draw_background(surface)
         if self.showing_instructions:
             self._draw_instructions(surface, title_font, body_font, button_font)
             return
 
-        draw_centered_text(surface, "BOMB PRIZE GAME", title_font, 155)
+        draw_centered_text(surface, "BOMB PRIZE GAME", title_font, 125)
         draw_centered_text(
             surface,
-            "A local two-player turn-based game",
+            "Tiny bombs, big prize, two brave players.",
             body_font,
-            215,
+            185,
             MUTED_TEXT,
         )
+        hero = pygame.Rect(
+            WINDOW_WIDTH // 2 - 145,
+            218,
+            290,
+            50,
+        )
+        pygame.draw.rect(surface, (255, 207, 89), hero, border_radius=25)
+        draw_centered_text(surface, "3 Bombs + 1 Prize", body_font, 243, (25, 31, 45))
         self.start_button.draw(surface, button_font)
         self.instructions_button.draw(surface, button_font)
         self.quit_button.draw(surface, button_font)
@@ -87,7 +93,7 @@ class MainMenu:
             WINDOW_WIDTH - panel_margin * 2,
             340,
         )
-        pygame.draw.rect(surface, PANEL, panel, border_radius=10)
+        draw_panel(surface, panel)
         lines = [
             "Each player secretly places 3 bombs and 1 prize.",
             "On your turn, choose one hidden cell on your opponent's board.",

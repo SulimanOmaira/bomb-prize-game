@@ -1,7 +1,12 @@
 """Application entry point for Bomb Prize Game."""
 
 import asyncio
+import os
+import sys
 from typing import Optional, Union
+
+if sys.platform == "emscripten":
+    os.environ["SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"] = "#canvas"
 
 import pygame
 
@@ -41,7 +46,6 @@ class GameApplication:
         self.display_surface = pygame.display.set_mode(
             (DISPLAY_WIDTH, DISPLAY_HEIGHT)
         )
-        self.surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.viewport_scale = min(
             DISPLAY_WIDTH / WINDOW_WIDTH,
             DISPLAY_HEIGHT / WINDOW_HEIGHT,
@@ -53,6 +57,11 @@ class GameApplication:
         self.viewport_offset = (
             (DISPLAY_WIDTH - self.viewport_size[0]) // 2,
             (DISPLAY_HEIGHT - self.viewport_size[1]) // 2,
+        )
+        self.surface = (
+            self.display_surface
+            if self.viewport_size == (WINDOW_WIDTH, WINDOW_HEIGHT)
+            else pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
         )
         self.clock = pygame.time.Clock()
         self.title_font = pygame.font.Font(None, 40 if COMPACT_LAYOUT else 46)
@@ -66,6 +75,7 @@ class GameApplication:
         self.state = "menu"
         self.pass_destination = ""
         self.running = True
+        self.debug_frame_logged = False
 
     async def run(self) -> None:
         try:
@@ -90,8 +100,22 @@ class GameApplication:
                     self.body_font,
                     self.button_font,
                 )
+                if not self.debug_frame_logged:
+                    print(
+                        "Bomb Prize Game: first frame drawn",
+                        {
+                            "state": self.state,
+                            "window": (WINDOW_WIDTH, WINDOW_HEIGHT),
+                            "display": (DISPLAY_WIDTH, DISPLAY_HEIGHT),
+                            "viewport_size": self.viewport_size,
+                            "viewport_offset": self.viewport_offset,
+                        },
+                    )
+                    self.debug_frame_logged = True
                 self._present()
+                self._force_browser_canvas_refresh()
                 pygame.display.flip()
+                pygame.display.update(pygame.Rect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT))
                 self.clock.tick(FPS)
                 await asyncio.sleep(0)
         finally:
@@ -113,6 +137,9 @@ class GameApplication:
         return x, y
 
     def _present(self) -> None:
+        if self.surface is self.display_surface:
+            return
+
         self.display_surface.fill(BACKGROUND)
         if self.viewport_size == (WINDOW_WIDTH, WINDOW_HEIGHT):
             rendered = self.surface
@@ -122,6 +149,16 @@ class GameApplication:
                 self.viewport_size,
             )
         self.display_surface.blit(rendered, self.viewport_offset)
+
+    def _force_browser_canvas_refresh(self) -> None:
+        """Force pygbag's browser canvas to present without visible debug art."""
+        if sys.platform != "emscripten":
+            return
+
+        # The visible pink rectangle worked because it forced a final large
+        # draw on the real display surface. This self-copy keeps the pixels
+        # identical while still giving pygbag/SDL a final display-surface blit.
+        self.display_surface.blit(self.display_surface.copy(), (0, 0))
 
     def _handle_action(self, action: object) -> None:
         if action == "quit":
@@ -239,5 +276,6 @@ async def main() -> None:
             pygame.quit()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" or sys.argv == [""]:
+    print("Bomb Prize Game: starting")
     asyncio.run(main())

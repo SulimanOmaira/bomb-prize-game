@@ -7,13 +7,11 @@ import pygame
 from game.button import Button
 from game.game_manager import GameManager
 from game.settings import (
-    BACKGROUND,
     COMPACT_LAYOUT,
     MUTED_TEXT,
-    PANEL,
     WINDOW_WIDTH,
 )
-from .common import draw_centered_text
+from .common import draw_background, draw_centered_text, draw_panel
 
 
 class ResultScreen:
@@ -45,7 +43,7 @@ class ResultScreen:
         body_font: pygame.font.Font,
         button_font: pygame.font.Font,
     ) -> None:
-        surface.fill(BACKGROUND)
+        draw_background(surface)
         panel_margin = 30 if COMPACT_LAYOUT else 125
         panel = pygame.Rect(
             panel_margin,
@@ -53,7 +51,7 @@ class ResultScreen:
             WINDOW_WIDTH - panel_margin * 2,
             590,
         )
-        pygame.draw.rect(surface, PANEL, panel, border_radius=12)
+        draw_panel(surface, panel)
         draw_centered_text(surface, "Game Over", title_font, 110)
 
         winner = self.manager.winner

@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark;
-  background: #1c2638;
+  background: #121826;
 }
 
 * {
@@ -10,11 +10,15 @@
 html,
 body {
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: 100dvh;
   min-height: 100dvh;
   margin: 0;
   overflow: hidden;
-  background: #1c2638;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(88, 208, 255, 0.2), transparent 32%),
+    radial-gradient(circle at 86% 82%, rgba(255, 197, 78, 0.22), transparent 34%),
+    linear-gradient(145deg, #121826, #2c224c);
   overscroll-behavior: none;
 }
 
@@ -29,8 +33,9 @@ body {
   align-items: stretch;
   justify-content: stretch;
   width: 100%;
-  height: 100%;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   padding:
     env(safe-area-inset-top)
     env(safe-area-inset-right)
@@ -46,5 +51,5 @@ body {
   min-width: 0;
   min-height: 0;
   border: 0;
-  background: #1c2638;
+  background: #121826;
 }

@@ -6,14 +6,12 @@ import pygame
 
 from game.button import Button
 from game.settings import (
-    BACKGROUND,
     COMPACT_LAYOUT,
     Color,
     MUTED_TEXT,
-    PANEL,
     WINDOW_WIDTH,
 )
-from .common import draw_centered_text
+from .common import draw_background, draw_centered_text, draw_panel
 
 
 class PassScreen:
@@ -46,7 +44,7 @@ class PassScreen:
         body_font: pygame.font.Font,
         button_font: pygame.font.Font,
     ) -> None:
-        surface.fill(BACKGROUND)
+        draw_background(surface)
         panel_margin = 30 if COMPACT_LAYOUT else 145
         panel = pygame.Rect(
             panel_margin,
@@ -54,14 +52,7 @@ class PassScreen:
             WINDOW_WIDTH - panel_margin * 2,
             385,
         )
-        pygame.draw.rect(surface, PANEL, panel, border_radius=12)
-        pygame.draw.rect(
-            surface,
-            self.next_player_color,
-            panel,
-            4,
-            border_radius=12,
-        )
+        draw_panel(surface, panel, self.next_player_color, 4)
         draw_centered_text(surface, "Pass the device", title_font, 230)
         draw_centered_text(
             surface,
